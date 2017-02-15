@@ -87,13 +87,18 @@ class PaperContorller {
     const paperId = req.params.paperId;
     async.waterfall([
       (done)=> {
-        Section.findOneAndRemove({paper: paperId}, done)
+        Paper.findByIdAndRemove(paperId, done)
       },
-      (data, done) => {
-        if (!data) {
+      (docs, done) => {
+        if (!docs) {
           return done(true, null);
         }
-        Paper.findByIdAndRemove(paperId, done)
+        Section.find({}, done);
+        // Section.findAndRemove({paper: paperId}, done)
+      },
+      (docs, done) => {
+        const sections = docs.filter(section => section.paper.toJSON() === paperId);
+        Section.remove(sections, done);
       }
     ], (err) => {
       if (err === true) {
